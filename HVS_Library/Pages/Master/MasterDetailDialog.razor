@@ -1,0 +1,88 @@
+﻿@inject Radzen.DialogService dialogService
+
+<RadzenColumn Size="12" SizeMD="6" class="rz-p-4 rz-border-radius-1" Style="border: var(--rz-grid-cell-border)">
+    <RadzenText TextStyle="TextStyle.Subtitle1">Delivery Information</RadzenText>
+    <RadzenStack Gap="0" class="rz-text-truncate">
+        @if (item is Book)
+        {
+            <RadzenBadge Text="Buch" BadgeStyle="BadgeStyle.Base" Style="width:100px;"></RadzenBadge>
+        }
+        else
+        {
+            <RadzenBadge Text="DVD" BadgeStyle="BadgeStyle.Secondary" Style="width:100px;"></RadzenBadge>
+        }
+
+        @if (item.CheckIfCurrentlyBorrowed())
+        {
+            <RadzenBadge Text="Aktuell ausgeliehen" BadgeStyle="BadgeStyle.Warning" Style="width:300px;"></RadzenBadge>
+        }
+        else
+        {
+            <RadzenBadge Text="Verfügbar" BadgeStyle="BadgeStyle.Success" Style="width:100px;"></RadzenBadge>
+        }
+
+        <RadzenText TextStyle="TextStyle.Overline" class="rz-mt-2 rz-my-0" Style="color: var(--rz-text-tertiary-color);">Titel</RadzenText>
+        <RadzenText TextStyle="TextStyle.Body1" class="rz-text-truncate"><b>@item.title</b></RadzenText>
+        <RadzenText TextStyle="TextStyle.Overline" class="rz-mt-2 rz-my-0" Style="color: var(--rz-text-tertiary-color);">Veröffentlichungsdatum</RadzenText>
+        <RadzenText TextStyle="TextStyle.Body1" class="rz-text-truncate"><b>@(item.publicationDate.Year)</b></RadzenText>
+        @if (item is Book)
+        {
+            <RadzenText TextStyle="TextStyle.Overline" class="rz-mt-2 rz-my-0" Style="color: var(--rz-text-tertiary-color);">Author</RadzenText>
+            <RadzenText TextStyle="TextStyle.Body1" class="rz-text-truncate"><b>@((item as Book).author)</b></RadzenText>
+        }
+        else
+        {
+            <RadzenText TextStyle="TextStyle.Overline" class="rz-mt-2 rz-my-0" Style="color: var(--rz-text-tertiary-color);">Laufzeit</RadzenText>
+            <RadzenText TextStyle="TextStyle.Body1" class="rz-text-truncate"><b>@((item as DVD).runtime.ToString("c"))</b></RadzenText>
+            <RadzenText TextStyle="TextStyle.Overline" class="rz-mt-2 rz-my-0" Style="color: var(--rz-text-tertiary-color);">Direktor</RadzenText>
+            <RadzenText TextStyle="TextStyle.Body1" class="rz-text-truncate"><b>@((item as DVD).director)</b></RadzenText>
+        }
+
+
+       @if(item.CheckIfCurrentlyBorrowed()){
+            @if (item.CheckIfNextWaiterPickedUp())
+            {
+                <RadzenButton Text="Rausgeben" ButtonStyle="ButtonStyle.Light" Click="(() => item.PickUpItem())"></RadzenButton>
+            }
+            else
+            {
+                <RadzenButton Text="Abgegeben" Click="(() => item.GaveItemBack())" ButtonStyle="ButtonStyle.Light"></RadzenButton>
+            }
+       }
+    </RadzenStack>
+</RadzenColumn>
+
+
+<RadzenDataGrid AllowFiltering="true" AllowColumnResize="true" AllowAlternatingRows="false" FilterMode="FilterMode.Advanced" AllowSorting="true" PageSize="20" AllowPaging="true" PagerHorizontalAlign="HorizontalAlign.Left" ShowPagingSummary="true" TItem="BorrowHistoryItem"
+                Data="@item.history" ColumnWidth="300px" LogicalFilterOperator="LogicalFilterOperator.Or" SelectionMode="DataGridSelectionMode.Single">
+    <Columns>
+        <RadzenDataGridColumn Property="@nameof(BorrowHistoryItem.userNameOfBorrower)" Title="UserName" />
+        <RadzenDataGridColumn Title="Zurückgegeben" Filterable="false" Sortable="false">
+            <Template Context="data">
+                @if (data.gaveBack)
+                {
+                    <RadzenBadge Text="Ja" BadgeStyle="BadgeStyle.Base"></RadzenBadge>
+                }
+                else
+                {
+                    <RadzenBadge Text="Nein" BadgeStyle="BadgeStyle.Secondary"></RadzenBadge>
+                }
+            </Template>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn Title="Ausgeliehen" Filterable="false" Sortable="false">
+            <Template Context="data">
+                <RadzenText Text='@data.startBorrowTime.ToString("dd.MM.yyyy HH:mm")'></RadzenText>
+            </Template>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn Title="Zurückgegeben" Filterable="false" Sortable="false">
+            <Template Context="data">
+                <RadzenText Text='@data.gaveBackTime.ToString("dd.MM.yyyy HH:mm")'></RadzenText>
+            </Template>
+        </RadzenDataGridColumn>
+    </Columns>
+</RadzenDataGrid>
+
+@code {
+    [Parameter]
+    public BorrowableItem item { get; set; } = new BorrowableItem();
+}

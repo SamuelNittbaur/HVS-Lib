@@ -1,0 +1,115 @@
+﻿@page "/Overview"
+@using System;
+@using System.ComponentModel;
+@inject DialogService DialogService
+
+<RadzenCard Style="width:95vw; height 95vh; margin-top:2.5vh; margin-left: 2.5vw;">
+    <RadzenStack>
+        <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween">
+            <RadzenText Text="Überblick" TextStyle="TextStyle.H1"></RadzenText>
+            <RadzenStack Orientation="Orientation.Horizontal" Gap="1vw" >
+                <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.Start" Gap="0.5rem">
+                    <RadzenLabel Text="Suchen" Component="SearchBar" />
+                    <RadzenTextBox Name="SearchBar" Change="@(args => {searchValue = (string)args; })"></RadzenTextBox>
+                </RadzenStack>
+                <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.Start" Gap="0.5rem">
+                    <RadzenLabel Text="Typ" Component="TypDropDown" />
+                    <RadzenDropDown TValue="string" Data=@filterTypes Change="@(args => {filteredValueType = (string)args; })" Style="width: 100%; max-width: 400px;" Name="TypDropDown" />
+                </RadzenStack>
+            </RadzenStack>
+
+        </RadzenStack>
+        <RadzenDataGrid AllowFiltering="true" AllowColumnResize="true" AllowAlternatingRows="false" FilterMode="FilterMode.Advanced" AllowSorting="true" PageSize="20" AllowPaging="true" PagerHorizontalAlign="HorizontalAlign.Left" ShowPagingSummary="true" RowClick="(_item => OpenDetailDialog(_item.Data))" TItem="BorrowableItem"
+                        Data="@GetItems()" ColumnWidth="300px" LogicalFilterOperator="LogicalFilterOperator.Or" SelectionMode="DataGridSelectionMode.Single">
+            <Columns>
+                <RadzenDataGridColumn Property="@nameof(BorrowableItem.title)" Title="Titel" />
+                <RadzenDataGridColumn Title="Typ" Filterable="false" Sortable="false">
+                    <Template Context="data">
+                        @if (data is Book)
+                        {
+                            <RadzenBadge Text="Buch" BadgeStyle="BadgeStyle.Base"></RadzenBadge>
+                        }
+                        else
+                        {
+                            <RadzenBadge Text="DVD" BadgeStyle="BadgeStyle.Secondary"></RadzenBadge>
+                        }
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn Title="Verfügbar" Filterable="false" Sortable="false">
+                    <Template Context="data">
+                        @if (data.CheckIfCurrentlyBorrowed())
+                        {
+                            <RadzenBadge Text="Gebucht" BadgeStyle="BadgeStyle.Warning"></RadzenBadge>
+                        }
+                        else
+                        {
+                            <RadzenBadge Text="Frei" BadgeStyle="BadgeStyle.Success"></RadzenBadge>
+                        }
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn Title="Veröffentlichungs Datum">
+                    <Template Context="data">
+                        <RadzenText>@data.publicationDate.Year</RadzenText>
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn Title="ID">
+                    <Template Context="data">
+                        <RadzenText>@data.id.ToString()</RadzenText>
+                    </Template>
+                </RadzenDataGridColumn>
+            </Columns>
+        </RadzenDataGrid>
+    </RadzenStack>
+</RadzenCard>
+
+@code {
+    private string filteredValueType = "Alle";
+    private string searchValue = String.Empty;
+
+    private List<string> filterTypes = new List<string>{
+        "Alle",
+        "Buch",
+        "DVD"
+    };
+
+    private List<BorrowableItem> GetItems()
+    {
+        if (filteredValueType == "Alle")
+        {
+            return Root.SearchByTitle(searchValue);
+        }
+        else
+        {
+            Type passedType = GetTypeByDescription(filteredValueType);
+            return Root.SearchByTypeAndDescription(passedType, searchValue);
+        }
+    }
+
+
+    //Die Funktion ist KI-generiert
+    private static Type GetTypeByDescription(string description)
+    {
+        return AppDomain.CurrentDomain.GetAssemblies()
+            .SelectMany(a => a.GetTypes())
+            .Where(t => t.IsClass)
+            .FirstOrDefault(t =>
+            {
+                var attribute = (DescriptionAttribute)Attribute.GetCustomAttribute(t, typeof(DescriptionAttribute));
+                return attribute != null && attribute.Description == description;
+            });
+    }
+
+
+    private async Task OpenDetailDialog(BorrowableItem item){
+        await DialogService.OpenAsync<DetailDialog>(item.title,
+              new Dictionary<string, object>() { { "item", item } },
+              new DialogOptions()
+                  {
+                      Resizable = true,
+                      Draggable = true,
+                      Width = "50vw",
+                      Height = "50vh",
+                      
+                  });
+    }
+}

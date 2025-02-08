@@ -1,0 +1,74 @@
+﻿@inject Radzen.DialogService dialogService
+
+<RadzenColumn Size="12" SizeMD="6" class="rz-p-4 rz-border-radius-1" Style="border: var(--rz-grid-cell-border)">
+    <RadzenText TextStyle="TextStyle.Subtitle1">Delivery Information</RadzenText>
+    <RadzenStack Gap="0" class="rz-text-truncate">
+        @if (item is Book)
+        {
+            <RadzenBadge Text="Buch" BadgeStyle="BadgeStyle.Base" Style="width:100px;"></RadzenBadge>
+        }
+        else
+        {
+            <RadzenBadge Text="DVD" BadgeStyle="BadgeStyle.Secondary" Style="width:100px;"></RadzenBadge>
+        }
+
+        @if (item.CheckIfCurrentlyBorrowed())
+        {
+            <RadzenBadge Text="Aktuell ausgeliehen" BadgeStyle="BadgeStyle.Warning" Style="width:300px;"></RadzenBadge>
+        }
+        else
+        {
+            <RadzenBadge Text="Verfügbar" BadgeStyle="BadgeStyle.Success" Style="width:100px;"></RadzenBadge>
+        }
+
+        <RadzenText TextStyle="TextStyle.Overline" class="rz-mt-2 rz-my-0" Style="color: var(--rz-text-tertiary-color);">Titel</RadzenText>
+        <RadzenText TextStyle="TextStyle.Body1" class="rz-text-truncate"><b>@item.title</b></RadzenText>
+        <RadzenText TextStyle="TextStyle.Overline" class="rz-mt-2 rz-my-0" Style="color: var(--rz-text-tertiary-color);">Veröffentlichungsdatum</RadzenText>
+        <RadzenText TextStyle="TextStyle.Body1" class="rz-text-truncate"><b>@(item.publicationDate.Year)</b></RadzenText>
+        @if (item is Book)
+        {
+            <RadzenText TextStyle="TextStyle.Overline" class="rz-mt-2 rz-my-0" Style="color: var(--rz-text-tertiary-color);">Author</RadzenText>
+            <RadzenText TextStyle="TextStyle.Body1" class="rz-text-truncate"><b>@((item as Book).author)</b></RadzenText>
+        }
+        else
+        {
+            <RadzenText TextStyle="TextStyle.Overline" class="rz-mt-2 rz-my-0" Style="color: var(--rz-text-tertiary-color);">Laufzeit</RadzenText>
+            <RadzenText TextStyle="TextStyle.Body1" class="rz-text-truncate"><b>@((item as DVD).runtime.ToString("c"))</b></RadzenText>
+            <RadzenText TextStyle="TextStyle.Overline" class="rz-mt-2 rz-my-0" Style="color: var(--rz-text-tertiary-color);">Direktor</RadzenText>
+            <RadzenText TextStyle="TextStyle.Body1" class="rz-text-truncate"><b>@((item as DVD).director)</b></RadzenText>
+        }
+
+        @if (item.IsUserInWaitingList(Logic.UserRoot.userId))
+        {
+            <RadzenButton Text="Aus Warteliste austreten" ButtonStyle="ButtonStyle.Light" Click="RemoveFromWaitingLine"></RadzenButton>
+        }
+        else
+        {
+            <RadzenText>Aktuelle Warteliste: @item.waitLine.Count()</RadzenText>
+            <RadzenButton Text="Auf Warteliste setzen" ButtonStyle="ButtonStyle.Light" Click="BookItem"></RadzenButton>
+        }
+
+
+
+    </RadzenStack>
+</RadzenColumn>
+
+
+@code {
+    [Parameter]
+    public BorrowableItem item { get; set; } = new BorrowableItem();
+
+    private void BookItem()
+    {
+        var respone = item.BookItem(Logic.UserRoot.userId, Logic.UserRoot.userName);
+        //Response ausgeben
+        StateHasChanged();
+    }
+
+    private void RemoveFromWaitingLine()
+    {
+        var respone = item.UnBookItem(Logic.UserRoot.userId);
+        //Response ausgeben
+        StateHasChanged();
+    }
+}
