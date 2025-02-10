@@ -1,4 +1,5 @@
 ﻿@inject NavigationManager navManager
+@inject IJSRuntime jsRuntime
 @page "/"
 @page "/Login"
 
@@ -8,22 +9,30 @@
             <RadzenTextBox id="email" @bind-Value="@userName" Style="width: 100%;" />
         </RadzenFormField>
         <RadzenPassword id="password" Style="width: 100%; height: 50px; border-radius: 8px;" Placeholder="Enter password..." AutoComplete="false" aria-label="enter password" />
-        <RadzenButton Variant="Variant.Flat" Click="LoginClicked" Text="Login" ButtonStyle="ButtonStyle.Success" Style="width: 100%;"/>
+        <RadzenButton Variant="Variant.Flat" Click="LoginClicked" Text="Login" ButtonStyle="ButtonStyle.Success" Style="width: 100%;" />
     </RadzenRow>
 </RadzenCard>
 
 @code {
-    private string userName = String.Empty;    
+    private string userName = String.Empty;
 
-    private void LoginClicked(){
+
+    private async void LoginClicked()
+    {
         if (userName == "Master")
         {
             navManager.NavigateTo("MasterOverview");
         }
-        else {
-            Logic.UserRoot.userName = userName;
-            Logic.UserRoot.userId = Guid.NewGuid();
-
+        else
+        {
+            Guid id = Guid.NewGuid();
+            await SessionController.SetData(jsRuntime, "userName", userName);
+            await SessionController.SetData(jsRuntime, "userId", id.ToString());
+            UserRoot.users.Add(new User()
+                {
+                    id = id,
+                    name = userName
+                });
             navManager.NavigateTo("Overview");
         }
     }

@@ -1,4 +1,5 @@
 ﻿@inject Radzen.DialogService dialogService
+@inject IJSRuntime jsRuntime
 
 <RadzenColumn Size="12" SizeMD="6" class="rz-p-4 rz-border-radius-1" Style="border: var(--rz-grid-cell-border)">
     <RadzenText TextStyle="TextStyle.Subtitle1">Delivery Information</RadzenText>
@@ -38,7 +39,7 @@
             <RadzenText TextStyle="TextStyle.Body1" class="rz-text-truncate"><b>@((item as DVD).director)</b></RadzenText>
         }
 
-        @if (item.IsUserInWaitingList(Logic.UserRoot.userId))
+        @if (item.IsUserInWaitingList(userId))
         {
             <RadzenButton Text="Aus Warteliste austreten" ButtonStyle="ButtonStyle.Light" Click="RemoveFromWaitingLine"></RadzenButton>
         }
@@ -58,16 +59,25 @@
     [Parameter]
     public BorrowableItem item { get; set; } = new BorrowableItem();
 
+    private Guid userId = Guid.Empty;
+    private string userName = String.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        userName = await SessionController.GetData(jsRuntime, "userName");
+        userId = Guid.Parse(await SessionController.GetData(jsRuntime, "userId"));
+    }
+
     private void BookItem()
     {
-        var respone = item.BookItem(Logic.UserRoot.userId, Logic.UserRoot.userName);
+        var respone = item.BookItem(userId, userName);
         //Response ausgeben
         StateHasChanged();
     }
 
     private void RemoveFromWaitingLine()
     {
-        var respone = item.UnBookItem(Logic.UserRoot.userId);
+        var respone = item.UnBookItem(userId);
         //Response ausgeben
         StateHasChanged();
     }

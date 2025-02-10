@@ -1,0 +1,51 @@
+﻿@page "/MasterUserOverview"
+@using System;
+@using System.ComponentModel;
+@inject DialogService DialogService
+@inject IJSRuntime jsRuntime
+@inject NavigationManager navManager
+
+<RadzenCard Style="width:95vw; height 95vh; margin-top:2.5vh; margin-left: 2.5vw;">
+    <RadzenStack>
+        <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween">
+            <RadzenText Text="Master User Überblick" TextStyle="TextStyle.H1"></RadzenText>
+            <RadzenStack Orientation="Orientation.Horizontal" Gap="1vw" >
+                <RadzenButton Click="OpenItemOverview" Style="height:40px; width:200px;" ButtonStyle="ButtonStyle.Base" Variant="Variant.Outlined">Item Übersicht</RadzenButton>
+            </RadzenStack>
+
+        </RadzenStack>
+        <RadzenDataGrid AllowFiltering="true" AllowColumnResize="true" AllowAlternatingRows="false" FilterMode="FilterMode.Advanced" AllowSorting="true" PageSize="20" AllowPaging="true" PagerHorizontalAlign="HorizontalAlign.Left" ShowPagingSummary="true" RowClick="(_item => OpenDetailDialog(_item.Data))" TItem="User"
+                        Data="Logic.UserRoot.users" ColumnWidth="300px" LogicalFilterOperator="LogicalFilterOperator.Or" SelectionMode="DataGridSelectionMode.Single">
+            <Columns>
+                <RadzenDataGridColumn Property="@nameof(User.name)" Title="Username" />
+                <RadzenDataGridColumn Title="ID" Filterable="false" Sortable="false">
+                    <Template Context="data">
+                        <RadzenText>@data.id.ToString()</RadzenText>
+                    </Template>
+                </RadzenDataGridColumn>
+                
+            </Columns>
+        </RadzenDataGrid>
+    </RadzenStack>
+</RadzenCard>
+
+@code {
+
+    private async Task OpenDetailDialog(User user){
+        await DialogService.OpenAsync<UserDetail>(user.name,
+              new Dictionary<string, object>() { { "user", user } },
+              new DialogOptions()
+                  {
+                      Resizable = true,
+                      Draggable = true,
+                      Width = "80vw",
+                      Height = "80vh",
+                      
+                  });
+    }
+
+    private void OpenItemOverview()
+    {
+        navManager.NavigateTo("/MasterOverview");
+    }
+}

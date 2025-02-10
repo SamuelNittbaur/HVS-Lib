@@ -2,12 +2,15 @@
 @using System;
 @using System.ComponentModel;
 @inject DialogService DialogService
+@inject IJSRuntime jsRuntime
+@inject NavigationManager navManager
 
 <RadzenCard Style="width:95vw; height 95vh; margin-top:2.5vh; margin-left: 2.5vw;">
     <RadzenStack>
         <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween">
             <RadzenText Text="Master Überblick" TextStyle="TextStyle.H1"></RadzenText>
             <RadzenStack Orientation="Orientation.Horizontal" Gap="1vw" >
+                <RadzenButton Click="OpenMasterUserOverview" Style="height:40px; width:200px; margin-top:33px;" ButtonStyle="ButtonStyle.Base" Variant="Variant.Outlined">User Übersicht</RadzenButton>
                 <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.Start" Gap="0.5rem">
                     <RadzenLabel Text="Suchen" Component="SearchBar" />
                     <RadzenTextBox Name="SearchBar" Change="@(args => {searchValue = (string)args; })"></RadzenTextBox>
@@ -20,7 +23,7 @@
 
         </RadzenStack>
         <RadzenDataGrid AllowFiltering="true" AllowColumnResize="true" AllowAlternatingRows="false" FilterMode="FilterMode.Advanced" AllowSorting="true" PageSize="20" AllowPaging="true" PagerHorizontalAlign="HorizontalAlign.Left" ShowPagingSummary="true" RowClick="(_item => OpenDetailDialog(_item.Data))" TItem="BorrowableItem"
-                        Data="@GetItems()" ColumnWidth="300px" LogicalFilterOperator="LogicalFilterOperator.Or" SelectionMode="DataGridSelectionMode.Single">
+        Data="@GetItems()" ColumnWidth="300px" LogicalFilterOperator="LogicalFilterOperator.Or" SelectionMode="DataGridSelectionMode.Single">
             <Columns>
                 <RadzenDataGridColumn Property="@nameof(BorrowableItem.title)" Title="Titel" />
                 <RadzenDataGridColumn Title="Typ" Filterable="false" Sortable="false">
@@ -109,7 +112,11 @@
                       Draggable = true,
                       Width = "80vw",
                       Height = "80vh",
-                      
+
                   });
+    }
+
+    private void OpenMasterUserOverview(){
+        navManager.NavigateTo("/MasterUserOverview");
     }
 }

@@ -1,9 +1,20 @@
 ﻿using System.ComponentModel;
 using System.Net.Mail;
 using System.Net;
+using System;
 
 namespace Logic
 {
+    public interface IObserver
+    {
+        void Update(BorrowableItem item);
+    }
+    public interface ISubject
+    {
+        void AddObserver(IObserver observer);
+        void RemoveObserver(IObserver observer);
+        void NotifyObservers();
+    }
     public class BorrowableItem
     {
         public Guid id { get; set; } = Guid.Empty;
@@ -11,7 +22,16 @@ namespace Logic
         public DateTime publicationDate { get; set; } = DateTime.MinValue;
         public List<WaitLineItem> waitLine { get; set; } = new List<WaitLineItem>();
         public List<BorrowHistoryItem> history { get; set; } = new List<BorrowHistoryItem>();
-
+        private List<IObserver> observers { get; set; } = new List<IObserver>();
+        public void AddObserver(IObserver observer) => observers.Add(observer);
+        public void RemoveObserver(IObserver observer) => observers.Remove(observer);
+        public void NotifyObservers()
+        {
+            foreach (var observer in observers)
+            {
+                observer.Update(this);
+            }
+        }
         public bool CheckIfCurrentlyBorrowed()
         {
             return waitLine.Count() != 0;
@@ -55,7 +75,7 @@ namespace Logic
                         });
                     waitLine.Remove(waitLineItem);
 
-
+                    NotifyObservers();
 
                     return true;
                 }
@@ -110,6 +130,7 @@ namespace Logic
                 if (IsUserInWaitingList(userId))
                 {
                     waitLine.RemoveAll(_user => _user.userIdNameOfBorrower == userId);
+                    NotifyObservers();
                     return true;
                 }
                 else return false;
@@ -118,6 +139,13 @@ namespace Logic
             {
                 return false;
             }
+        }
+    }
+    public class NotificationService : IObserver
+    {
+        public void Update(BorrowableItem item)
+        {
+            //Send E-Mail
         }
     }
 
@@ -132,6 +160,12 @@ namespace Logic
     {
         public TimeSpan runtime { get; set; } = new TimeSpan();
         public string director { get; set; } = String.Empty;
+    }
+
+    [Description("Brett-Spiel")]
+    public class BoardGame : BorrowableItem
+    {
+        public bool isComplete { get; set; } = false;
     }
 
     public class WaitLineItem
@@ -151,5 +185,20 @@ namespace Logic
         public DateTime startBorrowTime { get; set; } = DateTime.MinValue;
         public DateTime gaveBackTime { get; set; } = DateTime.MinValue;
         public bool gaveBack { get; set; } = false;
+    }
+
+    public class User
+    {
+        public Guid id { get; set; } = Guid.Empty;
+        public string name { get; set; } = String.Empty;
+        public Dictionary<Guid, Guid> bookHistory { get; set; } = new Dictionary<Guid, Guid>(); //BookId and HistoryID
+    }
+
+    public class UserBorrowItem
+    {
+        public Guid id { get; set; } = Guid.Empty;
+        public Guid itemId { get; set; } = Guid.Empty;
+        public string itemName { get; set; } = String.Empty;
+        public BorrowHistoryItem itemHistory { get; set; } = new BorrowHistoryItem();
     }
 }

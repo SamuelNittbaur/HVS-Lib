@@ -2,6 +2,7 @@
 @using System;
 @using System.ComponentModel;
 @inject DialogService DialogService
+@inject IJSRuntime jsRuntime
 
 <RadzenCard Style="width:95vw; height 95vh; margin-top:2.5vh; margin-left: 2.5vw;">
     <RadzenStack>
@@ -71,6 +72,15 @@
         "Buch",
         "DVD"
     };
+
+    private Guid userId = Guid.Empty;
+    private string userName = String.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        userName = await SessionController.GetData(jsRuntime, "userName");
+        userId = Guid.Parse(await SessionController.GetData(jsRuntime, "userId"));
+    }
 
     private List<BorrowableItem> GetItems()
     {

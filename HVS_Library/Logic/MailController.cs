@@ -6,11 +6,14 @@ namespace Logic
 {
     public static class MailController
     {
+
         public static string GetUserNotificationContent(BorrowableItem item, string user)
         {
             string itemText = string.Empty;
             if (item is DVD) itemText = "die DVD";
             if (item is Book) itemText = "das Buch";
+
+            //Das Design ist KI generiert
 
             return "<!DOCTYPE html>" +
                             "<html lang=\"de\">" +

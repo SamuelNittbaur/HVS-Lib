@@ -2,14 +2,37 @@
 {
     public static class UserRoot
     {
-        public static Guid userId = Guid.Empty;
-        public static string userName = String.Empty;
+        public static List<User> users = new List<User>();
+
+        public static List<UserBorrowItem> GetUserHistoryItem(Guid userId)
+        {
+            List<UserBorrowItem> returnHistory = new List<UserBorrowItem>();
+            foreach(var item in Root.GetItems())
+            {
+                foreach(var history in item.history)
+                {
+                    if(history.userIdNameOfBorrower == userId)
+                    {
+                        returnHistory.Add(new UserBorrowItem()
+                        {
+                            id = Guid.NewGuid(),
+                            itemHistory = history,
+                            itemId = item.id,
+                            itemName = item.title
+                        });
+                    }
+                }
+            }
+
+            return returnHistory;
+        }
     }
 
     public static class Root
     {
         private static List<BorrowableItem> items = new List<BorrowableItem>();
         private static int levenshteinDistanceRange = 3;
+       
         public static List<BorrowableItem> GetItems()
         {
             return items;
