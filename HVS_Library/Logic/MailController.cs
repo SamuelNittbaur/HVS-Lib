@@ -6,7 +6,7 @@ namespace Logic
 {
     public static class MailController
     {
-
+        //Die Funktion ist KI-generiert
         public static string GetUserNotificationContent(BorrowableItem item, string user)
         {
             string itemText = string.Empty;

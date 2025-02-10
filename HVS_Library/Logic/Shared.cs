@@ -36,7 +36,6 @@ namespace Logic
         {
             return waitLine.Count() != 0;
         }
-
         public bool CheckIfNextWaiterPickedUp()
         {
             if (waitLine.Count() == 0) return false;
@@ -45,12 +44,10 @@ namespace Logic
                 return !waitLine.First().pickedUp;
             }
         }
-
         public bool IsUserInWaitingList(Guid userId)
         {
             return waitLine.Exists(_user => _user.userIdNameOfBorrower == userId);
         }
-
         public bool GaveItemBack()
         {
             try
@@ -85,7 +82,6 @@ namespace Logic
                 return false;
             }
         }
-
         public bool PickUpItem()
         {
             try
@@ -104,7 +100,6 @@ namespace Logic
                 return false;
             }
         }
-
         public bool BookItem(Guid userId, string userName)
         {
             try
@@ -122,7 +117,6 @@ namespace Logic
                 return false;
             }
         }
-
         public bool UnBookItem(Guid userId)
         {
             try
